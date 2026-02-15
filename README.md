@@ -1,59 +1,145 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Studio Booking API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API для системы онлайн-бронирования студии по дням и фиксированным временным слотам с синхронизацией данных с Google Calendar.
 
-## About Laravel
+## Описание проекта
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Это backend API для системы бронирования студии, которое позволяет:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Проверять доступность временных слотов
+- Создавать новые бронирования
+- Отменять существующие бронирования
+- Получать данные о бронированиях за период
+- Синхронизировать данные с Google Calendar
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Требования
 
-## Learning Laravel
+- PHP 8.x
+- Composer
+- MySQL или SQLite
+- Google Calendar API credentials
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Установка
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1. Клонирование репозитория
 
-## Laravel Sponsors
+```bash
+git clone https://github.com/zexz/studiobook.git
+cd studiobook
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 2. Установка зависимостей
 
-### Premium Partners
+```bash
+composer install
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 3. Настройка окружения
 
-## Contributing
+Скопируйте файл `.env.example` в `.env` и настройте параметры подключения к базе данных:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Code of Conduct
+Отредактируйте файл `.env`, указав параметры подключения к базе данных:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```
+DB_CONNECTION=mysql  # или sqlite
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=calendar_api
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## Security Vulnerabilities
+Если вы используете SQLite, укажите:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```
+DB_CONNECTION=sqlite
+```
 
-## License
+И создайте файл базы данных:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+touch database/database.sqlite
+```
+
+### 4. Настройка Google Calendar
+
+1. Создайте проект в [Google Cloud Console](https://console.cloud.google.com/)
+2. Включите Google Calendar API
+3. Создайте учетные данные OAuth 2.0
+4. Скачайте JSON файл с учетными данными
+5. Поместите файл в `storage/app/google-calendar/credentials.json`
+
+Добавьте в файл `.env` следующие параметры:
+
+```
+GOOGLE_CALENDAR_ID=primary  # или ID вашего календаря
+```
+
+### 5. Выполнение миграций
+
+```bash
+php artisan migrate
+```
+
+### 6. Настройка временных слотов
+
+Временные слоты можно настроить в файле конфигурации `config/booking.php` или через переменные окружения в `.env`:
+
+```
+BOOKING_START_TIME=09:00
+BOOKING_END_TIME=21:00
+BOOKING_SLOT_DURATION=60  # в минутах
+BOOKING_TIMEZONE=Europe/Moscow
+```
+
+## Запуск
+
+### Запуск сервера для разработки
+
+```bash
+php artisan serve
+```
+
+API будет доступно по адресу: http://localhost:8000/api
+
+### Настройка планировщика для синхронизации с Google Calendar
+
+Добавьте в crontab следующую запись для запуска синхронизации каждые 10 минут:
+
+```
+*/10 * * * * cd /path/to/project && php artisan app:sync-google-calendar >> /dev/null 2>&1
+```
+
+Или для тестирования запустите команду вручную:
+
+```bash
+php artisan app:sync-google-calendar
+```
+
+## API Документация
+
+Подробная документация API доступна в файле [docs/api.md](docs/api.md).
+
+### Основные эндпоинты
+
+- `GET /api/bookings/period` - Получение бронирований за период
+- `GET /api/availability` - Проверка доступности слотов на дату
+- `POST /api/bookings` - Создание нового бронирования
+- `DELETE /api/bookings/{id}` - Отмена бронирования
+
+## Тестирование
+
+Для запуска тестов выполните:
+
+```bash
+php artisan test
+```
+
+## Лицензия
+
+MIT
