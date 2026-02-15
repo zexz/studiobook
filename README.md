@@ -109,17 +109,73 @@ API будет доступно по адресу: http://localhost:8000/api
 
 ### Настройка планировщика для синхронизации с Google Calendar
 
-Добавьте в crontab следующую запись для запуска синхронизации каждые 10 минут:
+Для регулярной синхронизации с Google Calendar необходимо настроить планировщик задач (cron). Вот как это сделать:
+
+#### 1. Откройте crontab для редактирования:
+
+```bash
+crontab -e
+```
+
+#### 2. Добавьте следующую запись для запуска синхронизации каждые 10 минут:
 
 ```
 */10 * * * * cd /path/to/project && php artisan app:sync-google-calendar >> /dev/null 2>&1
 ```
 
-Или для тестирования запустите команду вручную:
+Замените `/path/to/project` на полный путь к вашему проекту, например:
+
+```
+*/10 * * * * cd /Users/zexz/Sites/calendar-api && php artisan app:sync-google-calendar >> /dev/null 2>&1
+```
+
+#### 3. Варианты настройки планировщика:
+
+**С логированием в файл:**
+
+```
+*/10 * * * * cd /Users/zexz/Sites/calendar-api && php artisan app:sync-google-calendar >> storage/logs/sync.log 2>&1
+```
+
+**С разной частотой запуска:**
+
+```
+# Каждые 5 минут
+*/5 * * * * cd /Users/zexz/Sites/calendar-api && php artisan app:sync-google-calendar
+
+# Каждые 30 минут
+*/30 * * * * cd /Users/zexz/Sites/calendar-api && php artisan app:sync-google-calendar
+
+# Каждый час
+0 * * * * cd /Users/zexz/Sites/calendar-api && php artisan app:sync-google-calendar
+
+# Каждый день в полночь
+0 0 * * * cd /Users/zexz/Sites/calendar-api && php artisan app:sync-google-calendar
+```
+
+#### 4. Проверка работы синхронизации
+
+Для тестирования и проверки работы синхронизации запустите команду вручную:
 
 ```bash
 php artisan app:sync-google-calendar
 ```
+
+Для просмотра подробного вывода добавьте параметр `-v` (вербозный режим):
+
+```bash
+php artisan app:sync-google-calendar -v
+```
+
+#### 5. Проверка статуса cron-заданий
+
+Чтобы проверить статус ваших cron-заданий:
+
+```bash
+crontab -l
+```
+
+Эта команда покажет все текущие задания в crontab.
 
 ## API Документация
 
